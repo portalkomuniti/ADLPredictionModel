@@ -17,7 +17,7 @@ def load_data():
 df = load_data()
 
 # Title of the Dashboard
-st.title('Real-Time Prediction Dashboard: Activity of Daily Live (ADL) for Elderly Individuals')
+st.title('Real-Time Prediction Dashboard: Activity of Daily Living (ADL) for Elderly Individuals')
 
 # Sidebar for parameters
 st.sidebar.title("Model Parameters")
