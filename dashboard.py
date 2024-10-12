@@ -1,115 +1,180 @@
+# app.py
+import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-import streamlit as st
+from statistics import mode
+import os
 
-# Load Data
-@st.cache_data
-def load_data():
-    sheet_id = '1iCrrT90X3AiRNu5wLkLtlmdsGcoXY8VfDwKWU9hNVYs'
-    df = pd.read_csv(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
-    return df
+# Display image above the title
+st.image("https://weactive.github.io/weact.png", width=120)
 
-df = load_data()
+# Set up the app title
+st.title("Penilaian Keupayaan Warga Emas Dalam Aktiviti Harian")
 
-# Title of the Dashboard
-st.title('Real-Time Prediction Dashboard: Activity of Daily Living (ADL) for Elderly Individuals')
+# Define file paths
+data_file_path = r"ADLdataclass.csv"
+predictions_file_path = r"user_predictions.xlsx"
 
-# Sidebar for parameters
-st.sidebar.title("Model Parameters")
-max_depth = st.sidebar.slider("Max Depth", 5, 15, 10)
-min_samples_split = st.sidebar.slider("Min Samples Split", 0.01, 0.1, 0.01, step=0.01)
-max_features = st.sidebar.slider("Max Features", 0.5, 1.0, 0.8, step=0.1)
-max_samples = st.sidebar.slider("Max Samples", 0.5, 1.0, 1.0, step=0.1)
+# Check if the data file exists at the specified path
+if os.path.exists(data_file_path):
+    # Load the data
+    data = pd.read_csv(data_file_path)
 
-# Train-Test Split Function
-def train_test_split_and_features(df):
-    y = df["target"]
-    x = df.drop(['target', 'state', 'district', 'age', 'gender', 'name'], axis=1)
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=0)
-    features = list(x.columns)
-    return x_train, x_test, y_train, y_test, features
+    # Sidebar inputs for personal details
+    name = st.sidebar.text_input("Nama", value="").upper()
+    age = st.sidebar.number_input("Umur", min_value=0, max_value=120, step=1)
+    gender = st.sidebar.selectbox("Jantina", options=["Sila Pilih", "Lelaki", "Perempuan"])
+    living_status = st.sidebar.selectbox("Status Penjagaan", options=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"])
+    location = st.sidebar.selectbox("Negeri", options=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"])
 
-# Train-Test Split
-x_train, x_test, y_train, y_test, features = train_test_split_and_features(df)
-
-# Model Training Function
-@st.cache_resource
-def fit_and_evaluate_model(x_train, y_train, max_depth, min_samples_split, max_features, max_samples):
-    random_forest = RandomForestClassifier(
-        random_state=0,
-        max_depth=max_depth,
-        min_samples_split=min_samples_split,
-        max_features=max_features,
-        max_samples=max_samples
+    # Dropdowns for assessments
+    st.sidebar.write("### Status Keupayaan")
+    toileting = st.sidebar.selectbox(
+        "Keupayaan Menggunakan Tandas",
+        options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
+        format_func=lambda x: {
+            "Pilih Status Anda": "Sila Pilih",
+            5: "Menggunakan tandas secara bebas sekurang-kurangnya 2 minggu",
+            4: "Menggunakan tandas secara bebas dengan kadangkala gagal",
+            3: "Memerlukan bantuan menggunakan tandas, kadangkala menggunakan lampin",
+            2: "Sentiasa memerlukan lampin, bekerjasama dalam menukar",
+            1: "Kesukaran dalam menukar lampin, memerlukan 2 orang",
+            0: "Menggunakan beg air kencing"
+        }[x]
     )
-    model = random_forest.fit(x_train, y_train)
-    return model
+    mobility = st.sidebar.selectbox(
+        "Keupayaan Pergerakan",
+        options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
+        format_func=lambda x: {
+            "Pilih Status Anda": "Sila Pilih",
+            5: "Boleh naik tangga dan keluar rumah tanpa bantuan",
+            4: "Boleh berjalan sendiri di lantai rata, tetapi tidak boleh naik tangga",
+            3: "Boleh bergerak dengan alat bantuan (tongkat, kerusi roda, dll.)",
+            2: "Memerlukan bantuan untuk pemindahan tetapi boleh duduk sendiri",
+            1: "Tidak boleh berpindah sendiri tetapi boleh bergolek di atas katil",
+            0: "Tidak boleh mengubah kedudukan badan di atas katil"
+        }[x]
+    )
+    eating = st.sidebar.selectbox(
+        "Keupayaan Untuk Makan",
+        options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
+        format_func=lambda x: {
+            "Pilih Status Anda": "Sila Pilih",
+            5: "Boleh makan secara bebas tanpa bantuan",
+            4: "Boleh makan secara bebas tetapi mungkin mengotorkan meja",
+            3: "Memerlukan bantuan untuk makan, tiada masalah menelan",
+            2: "Kesukaran menelan, memerlukan makanan lembut",
+            1: "Memerlukan pemakanan khusus melalui tiub intravena (parenteral alimentation)",
+            0: "Memerlukan pemakanan alimentasi intravena (intravenous alimentation)"
+        }[x]
+    )
+    mental = st.sidebar.selectbox(
+        "Status Keupayaan Mental",
+        options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
+        format_func=lambda x: {
+            "Pilih Status Anda": "Sila Pilih",
+            5: "Tiada gangguan kognitif",
+            4: "Kehilangan ingatan, tiada tingkah laku bermasalah",
+            3: "Tingkah laku bermasalah, tiada gangguan orientasi",
+            2: "Gangguan orientasi yang teruk, tiada tingkah laku bermasalah",
+            1: "Gangguan orientasi dan tingkah laku bermasalah yang teruk",
+            0: "Tiada aktiviti mental atau respon"
+        }[x]
+    )
 
-model = fit_and_evaluate_model(x_train, y_train, max_depth, min_samples_split, max_features, max_samples)
-random_forest_predict = model.predict(x_test)
+    # Display labels with placeholders for results in single lines
+    col1, col2 = st.columns([1, 12])
+    col1.markdown("**Nama:**")
+    name_display = col2.write(name if name else "")
 
-# Feature Importance Descriptions
-feature_importance_descriptions = {
-    5: "None",
-    4: "None",
-    3: "Supervision",
-    2: "Assistance with assertive devices",
-    1: "Family Assistance",
-    0: "Total Assistance"
-}
+    col1, col2 = st.columns([1, 1.91])
+    col1.markdown("**Penilaian Keseluruhan:**")
+    overall_result = col2.empty()
 
-# Tabs in Streamlit
-tab1, tab2, tab3 = st.tabs(["Feature Importance", "Model Performance", "Data Overview"])
+    col1, col2 = st.columns([1, 1.91])
+    col1.markdown("**Keupayaan Pergerakan:**")
+    mobility_result = col2.empty()
 
-# Tab 1: Feature Importance
-with tab1:
-    st.header("Feature Importance")
+    col1, col2 = st.columns([1, 1.91])
+    col1.markdown("**Keupayaan Menggunakan Tandas:**")
+    toileting_result = col2.empty()
 
-    # Feature Importance Calculation
-    importances = pd.DataFrame(model.feature_importances_)
-    importances['features'] = features
-    importances.columns = ['importance', 'feature']
-    importances.sort_values(by='importance', ascending=True, inplace=True)
+    col1, col2 = st.columns([1, 1.91])
+    col1.markdown("**Keupayaan Untuk Makan:**")
+    eating_result = col2.empty()
 
-    # Plotting Feature Importance
-    plt.figure(figsize=(8, 5))
-    sns.barplot(x='importance', y='feature', data=importances, color='skyblue')
-    plt.title('Feature Importances')
-    plt.xlabel('Importance')
-    plt.ylabel('Feature')
-    st.pyplot(plt)
+    col1, col2 = st.columns([1, 1.91])
+    col1.markdown("**Keupayaan Mental:**")
+    mental_result = col2.empty()
 
-    # Display Feature Descriptions
-    st.subheader("Feature Importance Levels and Descriptions:")
-    for level, description in feature_importance_descriptions.items():
-        st.write(f"**{level}**: {description}")
+    # Ensure valid selections have been made for personal details and assessments
+    if all(value != "Pilih Status Anda" for value in [toileting, mobility, eating, mental]) and gender != "Pilih" and living_status != "Pilih":
+        # Prediction button
+        if st.sidebar.button("Nilaikan Tahap Limitasi"):
+            # Determine the predicted class as the mode of input scores
+            input_data = [toileting, mobility, eating, mental]
+            predicted_class = mode(input_data)
 
-# Tab 2: Model Performance
-with tab2:
-    st.header("Model Performance")
-    st.subheader("Confusion Matrix")
-    random_forest_conf_matrix = confusion_matrix(y_test, random_forest_predict)
-    st.write(random_forest_conf_matrix)
-    
-    st.subheader("Accuracy Score")
-    random_forest_acc_score = accuracy_score(y_test, random_forest_predict)
-    st.write(f"Accuracy: {random_forest_acc_score * 100:.2f}%")
+            # Assistance level descriptions with traffic light colors
+            assistance_mapping = {
+                5: ("Tiada keperluan bantuan", "#00FF00"),  # Green
+                4: ("Perlu Pengawasan oleh ahli keluarga", "#FFFF00"),  # Yellow
+                3: ("Perlu Bantuan oleh ahli keluarga", "#FFFF00"),  # Yellow
+                2: ("Perlu Sokongan penuh oleh keluarga", "#FFFF00"),  # Yellow
+                1: ("Perlu Sokongan pakar", "#FF0000"),  # Red
+                0: ("Perlu Penjagaan sepenuhnya", "#FF0000")  # Red
+            }
 
-    st.subheader("Classification Report")
-    st.text(classification_report(y_test, random_forest_predict))
+            # Detailed assistance descriptions with traffic light colors
+            details_mapping = {
+                "mobility": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Tiada, tetapi mungkin memerlukan pengawasan di tangga", "#00FF00"),
+                    3: ("Perlu Alat bantuan (tongkat, kerusi roda)", "#FFFF00"),
+                    2: ("Bantuan untuk pemindahan", "#FFFF00"),
+                    1: ("Bantuan untuk pemindahan, sokongan di katil", "#FF0000"),
+                    0: ("Bantuan sepenuhnya untuk semua keperluan pergerakan", "#FF0000")
+                },
+                "toileting": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Memerlukan pengawasan sekali-sekala", "#00FF00"),
+                    3: ("Memerlukan bantuan untuk menggunakan tandas atau lampin", "#FFFF00"),
+                    2: ("Memerlukan bantuan menukar lampin", "#FFFF00"),
+                    1: ("Memerlukan Bantuan dua orang untuk menukar lampin", "#FF0000"),
+                    0: ("Memerlukan penjagaan sepenuh masa", "#FF0000")
+                },
+                "eating": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Tiada keperluan bantuan atau sokongan", "#00FF00"),
+                    3: ("Memerlukan bantuan untuk menyuap makanan ke mulut", "#FFFF00"),
+                    2: ("Memerlukan makanan lembut dan bantuan untuk makan", "#FFFF00"),
+                    1: ("Sokongan pemakanan parenteral", "#FF0000"),
+                    0: ("Sokongan pemakanan sepenuhnya", "#FF0000")
+                },
+                "mental": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Pengawasan, bantuan ingatan", "#00FF00"),
+                    3: ("Sokongan tingkah laku, pengawasan", "#FFFF00"),
+                    2: ("Sokongan orientasi, pengawasan", "#FFFF00"),
+                    1: ("Pengawasan dan sokongan tingkah laku menyeluruh", "#FF0000"),
+                    0: ("Penjagaan sepenuh masa", "#FF0000")
+                }
+            }
 
-# Tab 3: Data Overview
-with tab3:
-    st.header("Data Overview")
-    st.write(df.head(10))
-    st.write("Data Information:")
-    st.write(df.describe())
-    st.write("Missing Values:")
-    st.write(df.isnull().sum())
-    st.write("Target Variable Distribution:")
-    st.write(df['target'].value_counts())
+            # Get the results and update display
+            assistance_desc, assistance_color = assistance_mapping[predicted_class]
+            mobility_desc, mobility_color = details_mapping['mobility'][mobility]
+            toileting_desc, toileting_color = details_mapping['toileting'][toileting]
+            eating_desc, eating_color = details_mapping['eating'][eating]
+            mental_desc, mental_color = details_mapping['mental'][mental]
+
+            # Update inline display with result and color
+            overall_result.markdown(f"<span style='color:{assistance_color}'>{assistance_desc}</span>", unsafe_allow_html=True)
+            mobility_result.markdown(f"<span style='color:{mobility_color}'>{mobility_desc}</span>", unsafe_allow_html=True)
+            toileting_result.markdown(f"<span style='color:{toileting_color}'>{toileting_desc}</span>", unsafe_allow_html=True)
+            eating_result.markdown(f"<span style='color:{eating_color}'>{eating_desc}</span>", unsafe_allow_html=True)
+            mental_result.markdown(f"<span style='color:{mental_color}'>{mental_desc}</span>", unsafe_allow_html=True)
+    else:
+        st.sidebar.warning("Sila isi semua medan untuk meneruskan.")
+else:
+    st.write("Fail tidak dijumpai. Sila periksa laluan fail dan pastikan fail wujud di lokasi yang dinyatakan.")

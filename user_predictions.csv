@@ -1,0 +1,22 @@
+Name,Toileting,Mobility,Eating,Mental,Predicted Class,Assistance Description
+midi,5,4,1,3,2,Support by family
+wow,5,None,4,"None, but may need supervision on stairs.",4,None,1,Comprehensive supervision and behavioral aid.,1,Support
+joe,69,Male,kuala lumpur,1,2-person assistance for diaper changing.,1,"Assistance with transfers, support in bed.",1,Parenteral feeding support.,0,"Total care, full support.",4,Supervision by family member
+mido,100,Female,Living alone,kelantan,2,Diaper changing assistance.,1,"Assistance with transfers, support in bed.",0,Feeding support.,1,Comprehensive supervision and behavioral aid.,1,Support
+Lahbla,100,Male,Assisted living,,5,None,0,Total assistance for all mobility needs.,0,Feeding support.,3,"Behavioral support, supervision.",4,Supervision by family member
+TARMIDI,1,Male,Living with family,KELANTAN,5,None,0,Total assistance for all mobility needs.,1,Parenteral feeding support.,2,"Orientation support, supervision.",4,Supervision by family member
+MIDI,98,Lelaki,Tinggal bersama keluarga,KELANTAN,5,Tiada,5,Tiada,1,Sokongan pemakanan parenteral.,0,"Penjagaan sepenuhnya, sokongan penuh.",4,Pengawasan oleh ahli keluarga
+MELUKUT,70,Lelaki,Tinggal di Pusat Jagaan Awam,KELANTAN,5,Tiada,5,Tiada,1,Sokongan pemakanan parenteral.,0,"Penjagaan sepenuhnya, sokongan penuh.",4,Pengawasan oleh ahli keluarga
+MELUKUT,70,Lelaki,Tinggal di Pusat Jagaan Awam,,5,Tiada keperluan bantuan,5,Tiada keperluan bantuan,1,Sokongan pemakanan parenteral,0,"Penjagaan sepenuhnya, sokongan penuh",4,Pengawasan oleh ahli keluarga
+DOLLAH,69,Lelaki,Tinggal bersama keluarga,JOHOR,5,Tiada keperluan bantuan,2,Bantuan untuk pemindahan,5,Tiada keperluan bantuan,2,"Sokongan orientasi, pengawasan",0,Penjagaan sepenuhnya
+TOROY,96,Lelaki,Tinggal bersendirian,PERAK,2,Bantuan menukar lampin,1,"Bantuan untuk pemindahan, sokongan di katil",1,Sokongan pemakanan parenteral,0,"Penjagaan sepenuhnya, sokongan penuh",4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,98,Lelaki,Tinggal bersendirian,GWQGWGQ,1,Bantuan dua orang untuk menukar lampin,3,"Alat bantuan (tongkat, kerusi roda)",1,Sokongan pemakanan parenteral,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
+JOE,50,Lelaki,Tinggal bersama keluarga,KEDAH,4,Memerlukan pengawasan sekali-sekala,2,Bantuan untuk pemindahan,1,Sokongan pemakanan parenteral,1,Pengawasan dan sokongan tingkah laku menyeluruh,1,Perlu Sokongan pakar
+JOE,50,Lelaki,Tinggal bersama keluarga,KEDAH,4,Memerlukan pengawasan sekali-sekala,2,Bantuan untuk pemindahan,1,Sokongan pemakanan parenteral,1,Pengawasan dan sokongan tingkah laku menyeluruh,1,Perlu Sokongan pakar
+GAGA,95,Lelaki,Tinggal bersama keluarga,GAGAA,0,Penjagaan sepenuhnya,0,Bantuan sepenuhnya untuk semua keperluan pergerakan,0,Sokongan pemakanan sepenuhnya,0,Penjagaan sepenuhnya,4,Perlu Pengawasan oleh ahli keluarga
