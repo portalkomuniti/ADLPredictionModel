@@ -4,44 +4,16 @@ import pandas as pd
 import numpy as np
 from statistics import mode
 import os
-import gspread
-from google.oauth2.service_account import Credentials
-
-# Google Sheets Setup
-scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_file(
-    'json/glowing-run-353404-cc08efe2b4ba.json', scopes=scope)
-client = gspread.authorize(creds)
-
-# Open the Google Sheet by ID
-sheet = client.open_by_key("1AlXyNJ3u48BU7zKxz-dnCc7OA10znckKa8apBnIOm-k").sheet1  # Replace with your sheet ID
-
-# CSS to move the sidebar to the right
-st.markdown(
-    """
-    <style>
-    .css-18e3th9 {
-        flex-direction: row-reverse;
-    }
-    .css-1d391kg {
-        display: none;
-    }
-    .css-1v3fvcr {
-        order: 2;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # Display image above the title
 st.image("https://weactive.github.io/weact.png", width=120)
 
 # Set up the app title
-st.title("Penilaian Keupayaan Warga Emas Menjalani Aktiviti Harian")
+st.title("Penilaian Keupayaan Warga Emas Dalam Aktiviti Harian")
 
 # Define file paths
 data_file_path = r"ADLdataclass.csv"
+predictions_file_path = r"user_predictions.xlsx"
 
 # Check if the data file exists at the specified path
 if os.path.exists(data_file_path):
@@ -52,13 +24,8 @@ if os.path.exists(data_file_path):
     name = st.sidebar.text_input("Nama", value="").upper()
     age = st.sidebar.number_input("Umur", min_value=0, max_value=120, step=1)
     gender = st.sidebar.selectbox("Jantina", options=["Sila Pilih", "Lelaki", "Perempuan"])
-    living_status = st.sidebar.selectbox("Status Penjagaan", 
-                                         options=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", 
-                                                  "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"])
-    location = st.sidebar.selectbox("Negeri", 
-                                    options=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", 
-                                             "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", 
-                                             "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"])
+    living_status = st.sidebar.selectbox("Status Penjagaan", options=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"])
+    location = st.sidebar.selectbox("Negeri", options=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"])
 
     # Dropdowns for assessments
     st.sidebar.write("### Status Keupayaan")
@@ -80,7 +47,7 @@ if os.path.exists(data_file_path):
         options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
         format_func=lambda x: {
             "Pilih Status Anda": "Sila Pilih",
-            5: "Boleh menaiki tangga dan keluar rumah tanpa bantuan",
+            5: "Boleh naik tangga dan keluar rumah tanpa bantuan",
             4: "Boleh berjalan sendiri di lantai rata, tetapi tidak boleh naik tangga",
             3: "Boleh bergerak dengan alat bantuan (tongkat, kerusi roda, dll.)",
             2: "Memerlukan bantuan untuk pemindahan tetapi boleh duduk sendiri",
@@ -97,8 +64,8 @@ if os.path.exists(data_file_path):
             4: "Boleh makan secara bebas tetapi mungkin mengotorkan meja",
             3: "Memerlukan bantuan untuk makan, tiada masalah menelan",
             2: "Kesukaran menelan, memerlukan makanan lembut",
-            1: "Memerlukan pemakanan khusus melalui tiub parenteral (parenteral alimentation)",
-            0: "Memerlukan pemakanan khusus melalui alimentasi intravena (intravenous alimentation)"
+            1: "Memerlukan pemakanan khusus melalui tiub intravena (parenteral alimentation)",
+            0: "Memerlukan pemakanan alimentasi intravena (intravenous alimentation)"
         }[x]
     )
     mental = st.sidebar.selectbox(
@@ -143,7 +110,7 @@ if os.path.exists(data_file_path):
     # Ensure valid selections have been made for personal details and assessments
     if all(value != "Pilih Status Anda" for value in [toileting, mobility, eating, mental]) and gender != "Pilih" and living_status != "Pilih":
         # Prediction button
-        if st.sidebar.button("Klik Penilaian"):
+        if st.sidebar.button("Nilaikan Tahap Limitasi"):
             # Determine the predicted class as the mode of input scores
             input_data = [toileting, mobility, eating, mental]
             predicted_class = mode(input_data)
@@ -173,7 +140,7 @@ if os.path.exists(data_file_path):
                     4: ("Memerlukan pengawasan sekali-sekala", "#00FF00"),
                     3: ("Memerlukan bantuan untuk menggunakan tandas atau lampin", "#FFFF00"),
                     2: ("Memerlukan bantuan menukar lampin", "#FFFF00"),
-                    1: ("Memerlukan bantuan dua orang untuk menukar lampin", "#FF0000"),
+                    1: ("Memerlukan Bantuan dua orang untuk menukar lampin", "#FF0000"),
                     0: ("Memerlukan penjagaan sepenuh masa", "#FF0000")
                 },
                 "eating": {
@@ -181,16 +148,16 @@ if os.path.exists(data_file_path):
                     4: ("Tiada keperluan bantuan atau sokongan", "#00FF00"),
                     3: ("Memerlukan bantuan untuk menyuap makanan ke mulut", "#FFFF00"),
                     2: ("Memerlukan makanan lembut dan bantuan untuk makan", "#FFFF00"),
-                    1: ("Memerlukan sokongan pemakanan parenteral", "#FF0000"),
-                    0: ("Memerlukan sokongan pemakanan sepenuhnya", "#FF0000")
+                    1: ("Sokongan pemakanan parenteral", "#FF0000"),
+                    0: ("Sokongan pemakanan sepenuhnya", "#FF0000")
                 },
                 "mental": {
                     5: ("Tiada keperluan bantuan", "#00FF00"),
-                    4: ("Memerlukan pengawasan dan bantuan ingatan", "#00FF00"),
-                    3: ("Memerlukan pengawasan dan sokongan tingkah laku", "#FFFF00"),
-                    2: ("Memerlukan pengawasan dan sokongan orientasi", "#FFFF00"),
-                    1: ("Memerlukan pengawasan dan sokongan tingkah laku menyeluruh", "#FF0000"),
-                    0: ("Memerlukan penjagaan sepenuh masa", "#FF0000")
+                    4: ("Pengawasan, bantuan ingatan", "#00FF00"),
+                    3: ("Sokongan tingkah laku, pengawasan", "#FFFF00"),
+                    2: ("Sokongan orientasi, pengawasan", "#FFFF00"),
+                    1: ("Pengawasan dan sokongan tingkah laku menyeluruh", "#FF0000"),
+                    0: ("Penjagaan sepenuh masa", "#FF0000")
                 }
             }
 
@@ -207,11 +174,7 @@ if os.path.exists(data_file_path):
             toileting_result.markdown(f"<span style='color:{toileting_color}'>{toileting_desc}</span>", unsafe_allow_html=True)
             eating_result.markdown(f"<span style='color:{eating_color}'>{eating_desc}</span>", unsafe_allow_html=True)
             mental_result.markdown(f"<span style='color:{mental_color}'>{mental_desc}</span>", unsafe_allow_html=True)
-
-            # Append data to the Google Sheet
-            row_data = [name, age, gender, living_status, location, toileting, mobility, eating, mental, predicted_class]
-            sheet.append_row(row_data)
     else:
-        st.sidebar.warning("Sila lengkapkan semua medan untuk meneruskan.")
+        st.sidebar.warning("Sila isi semua medan untuk meneruskan.")
 else:
     st.write("Fail tidak dijumpai. Sila periksa laluan fail dan pastikan fail wujud di lokasi yang dinyatakan.")
