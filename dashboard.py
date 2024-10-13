@@ -8,24 +8,37 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # Google Sheets Setup
-scope = ["https://spreadsheets.google.com/feeds", 
-         "https://www.googleapis.com/auth/spreadsheets",
-         "https://www.googleapis.com/auth/drive.file", 
-         "https://www.googleapis.com/auth/drive"]
-
-# Replace with your service account JSON file path
+scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 creds = Credentials.from_service_account_file(
-    'json/client_secret_806467693509-0l8h7t8c7edm3cf2qnjd2dm77m0on9l3.apps.googleusercontent.com.json', scopes=scope)
+    'json/glowing-run-353404-cc08efe2b4ba.json', scopes=scope)
 client = gspread.authorize(creds)
 
 # Open the Google Sheet by ID
 sheet = client.open_by_key("1AlXyNJ3u48BU7zKxz-dnCc7OA10znckKa8apBnIOm-k").sheet1  # Replace with your sheet ID
 
+# CSS to move the sidebar to the right
+st.markdown(
+    """
+    <style>
+    .css-18e3th9 {
+        flex-direction: row-reverse;
+    }
+    .css-1d391kg {
+        display: none;
+    }
+    .css-1v3fvcr {
+        order: 2;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Display image above the title
 st.image("https://weactive.github.io/weact.png", width=120)
 
 # Set up the app title
-st.title("Penilaian Keupayaan Warga Emas Dalam Aktiviti Harian")
+st.title("Penilaian Keupayaan Warga Emas Menjalani Aktiviti Harian")
 
 # Define file paths
 data_file_path = r"ADLdataclass.csv"
@@ -67,7 +80,7 @@ if os.path.exists(data_file_path):
         options=["Pilih Status Anda", 5, 4, 3, 2, 1, 0],
         format_func=lambda x: {
             "Pilih Status Anda": "Sila Pilih",
-            5: "Boleh naik tangga dan keluar rumah tanpa bantuan",
+            5: "Boleh menaiki tangga dan keluar rumah tanpa bantuan",
             4: "Boleh berjalan sendiri di lantai rata, tetapi tidak boleh naik tangga",
             3: "Boleh bergerak dengan alat bantuan (tongkat, kerusi roda, dll.)",
             2: "Memerlukan bantuan untuk pemindahan tetapi boleh duduk sendiri",
@@ -84,8 +97,8 @@ if os.path.exists(data_file_path):
             4: "Boleh makan secara bebas tetapi mungkin mengotorkan meja",
             3: "Memerlukan bantuan untuk makan, tiada masalah menelan",
             2: "Kesukaran menelan, memerlukan makanan lembut",
-            1: "Memerlukan pemakanan khusus melalui tiub intravena (parenteral alimentation)",
-            0: "Memerlukan pemakanan alimentasi intravena (intravenous alimentation)"
+            1: "Memerlukan pemakanan khusus melalui tiub parenteral (parenteral alimentation)",
+            0: "Memerlukan pemakanan khusus melalui alimentasi intravena (intravenous alimentation)"
         }[x]
     )
     mental = st.sidebar.selectbox(
@@ -130,7 +143,7 @@ if os.path.exists(data_file_path):
     # Ensure valid selections have been made for personal details and assessments
     if all(value != "Pilih Status Anda" for value in [toileting, mobility, eating, mental]) and gender != "Pilih" and living_status != "Pilih":
         # Prediction button
-        if st.sidebar.button("Nilaikan Tahap Limitasi"):
+        if st.sidebar.button("Klik Penilaian"):
             # Determine the predicted class as the mode of input scores
             input_data = [toileting, mobility, eating, mental]
             predicted_class = mode(input_data)
@@ -149,22 +162,56 @@ if os.path.exists(data_file_path):
             details_mapping = {
                 "mobility": {
                     5: ("Tiada keperluan bantuan", "#00FF00"),
-                     # Additional mappings...
+                    4: ("Tiada, tetapi mungkin memerlukan pengawasan di tangga", "#00FF00"),
+                    3: ("Perlu Alat bantuan (tongkat, kerusi roda)", "#FFFF00"),
+                    2: ("Bantuan untuk pemindahan", "#FFFF00"),
+                    1: ("Bantuan untuk pemindahan, sokongan di katil", "#FF0000"),
+                    0: ("Bantuan sepenuhnya untuk semua keperluan pergerakan", "#FF0000")
                 },
-                # Additional mappings for toileting, eating, and mental
+                "toileting": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Memerlukan pengawasan sekali-sekala", "#00FF00"),
+                    3: ("Memerlukan bantuan untuk menggunakan tandas atau lampin", "#FFFF00"),
+                    2: ("Memerlukan bantuan menukar lampin", "#FFFF00"),
+                    1: ("Memerlukan bantuan dua orang untuk menukar lampin", "#FF0000"),
+                    0: ("Memerlukan penjagaan sepenuh masa", "#FF0000")
+                },
+                "eating": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Tiada keperluan bantuan atau sokongan", "#00FF00"),
+                    3: ("Memerlukan bantuan untuk menyuap makanan ke mulut", "#FFFF00"),
+                    2: ("Memerlukan makanan lembut dan bantuan untuk makan", "#FFFF00"),
+                    1: ("Memerlukan sokongan pemakanan parenteral", "#FF0000"),
+                    0: ("Memerlukan sokongan pemakanan sepenuhnya", "#FF0000")
+                },
+                "mental": {
+                    5: ("Tiada keperluan bantuan", "#00FF00"),
+                    4: ("Memerlukan pengawasan dan bantuan ingatan", "#00FF00"),
+                    3: ("Memerlukan pengawasan dan sokongan tingkah laku", "#FFFF00"),
+                    2: ("Memerlukan pengawasan dan sokongan orientasi", "#FFFF00"),
+                    1: ("Memerlukan pengawasan dan sokongan tingkah laku menyeluruh", "#FF0000"),
+                    0: ("Memerlukan penjagaan sepenuh masa", "#FF0000")
+                }
             }
 
             # Get the results and update display
             assistance_desc, assistance_color = assistance_mapping[predicted_class]
             mobility_desc, mobility_color = details_mapping['mobility'][mobility]
+            toileting_desc, toileting_color = details_mapping['toileting'][toileting]
+            eating_desc, eating_color = details_mapping['eating'][eating]
+            mental_desc, mental_color = details_mapping['mental'][mental]
+
             # Update inline display with result and color
             overall_result.markdown(f"<span style='color:{assistance_color}'>{assistance_desc}</span>", unsafe_allow_html=True)
-            # Additional display updates...
+            mobility_result.markdown(f"<span style='color:{mobility_color}'>{mobility_desc}</span>", unsafe_allow_html=True)
+            toileting_result.markdown(f"<span style='color:{toileting_color}'>{toileting_desc}</span>", unsafe_allow_html=True)
+            eating_result.markdown(f"<span style='color:{eating_color}'>{eating_desc}</span>", unsafe_allow_html=True)
+            mental_result.markdown(f"<span style='color:{mental_color}'>{mental_desc}</span>", unsafe_allow_html=True)
 
             # Append data to the Google Sheet
             row_data = [name, age, gender, living_status, location, toileting, mobility, eating, mental, predicted_class]
             sheet.append_row(row_data)
     else:
-        st.sidebar.warning("Sila isi semua medan untuk meneruskan.")
+        st.sidebar.warning("Sila lengkapkan semua medan untuk meneruskan.")
 else:
     st.write("Fail tidak dijumpai. Sila periksa laluan fail dan pastikan fail wujud di lokasi yang dinyatakan.")
