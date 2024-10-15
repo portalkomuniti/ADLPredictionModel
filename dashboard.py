@@ -1,4 +1,4 @@
-import streamlit as st
+tuimport streamlit as st
 import pandas as pd
 import numpy as np
 from statistics import mode
@@ -141,10 +141,10 @@ mandatory_fields_filled = all([
 
 # Show warning if not all mandatory fields are filled
 if not mandatory_fields_filled:
-    st.sidebar.warning("Sila isi semua medan untuk meneruskan.")
+    st.sidebar.warning("Sila lengkapkan semua medan untuk meneruskan.")
 
 # Prediction button
-if mandatory_fields_filled and st.sidebar.button("Nilaikan Tahap Limitasi"):
+if mandatory_fields_filled and st.sidebar.button("Klik Untuk Penilaian"):
     # Get the current date for the record
     current_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -236,7 +236,7 @@ if mandatory_fields_filled and st.sidebar.button("Nilaikan Tahap Limitasi"):
         # Create a new CSV file and save the data with headers
         results_df.to_csv(predictions_file_path, mode='w', index=False)
 
-    st.success("Results have been saved to the CSV file successfully.")
+    st.success("Keputusan Penilaian")
 
     # Set reset flag to clear inputs on the next run
     st.session_state['reset'] = True
