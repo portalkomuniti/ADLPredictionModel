@@ -11,40 +11,33 @@ st.image("https://weactive.github.io/weact.png", width=120)
 # Set up the app title
 st.title("Penilaian Keupayaan Warga Emas Dalam Aktiviti Harian")
 
-# Define file path for CSV output
-predictions_file_path = r"user_predictions.csv"
+# Define file paths
+data_file_path = r"ADLdataclass.csv"
+predictions_file_path = r"user_predictions.xlsx"
 
-# Initialize reset flag and input fields in session state if not already set
+# Initialize reset flag in session state
 if 'reset' not in st.session_state:
     st.session_state['reset'] = False
 
-# Initialize other fields only if they are not already set
-for key, default_value in {
-    'name': "",
-    'age': 0,
-    'gender': "Sila Pilih",
-    'living_status': "Sila Pilih",
-    'location': "Sila Pilih",
-    'toileting': "Pilih Status Anda",
-    'mobility': "Pilih Status Anda",
-    'eating': "Pilih Status Anda",
-    'mental': "Pilih Status Anda"
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = default_value
-
 # Check if reset flag is set, and reset inputs if needed
 if st.session_state['reset']:
-    for key in ['name', 'age', 'gender', 'living_status', 'location', 'toileting', 'mobility', 'eating', 'mental']:
-        st.session_state[key] = default_value  # Reset to initial values
+    st.session_state['name'] = ""
+    st.session_state['age'] = 0
+    st.session_state['gender'] = "Sila Pilih"
+    st.session_state['living_status'] = "Sila Pilih"
+    st.session_state['location'] = "Sila Pilih"
+    st.session_state['toileting'] = "Pilih Status Anda"
+    st.session_state['mobility'] = "Pilih Status Anda"
+    st.session_state['eating'] = "Pilih Status Anda"
+    st.session_state['mental'] = "Pilih Status Anda"
     st.session_state['reset'] = False  # Clear the flag
 
-# Sidebar inputs for personal details using session state without setting `value` explicitly
-name = st.sidebar.text_input("Nama", value=st.session_state.name, key="name").upper()
-age = st.sidebar.number_input("Umur", min_value=0, max_value=120, step=1, key="age")
-gender = st.sidebar.selectbox("Jantina", options=["Sila Pilih", "Lelaki", "Perempuan"], key="gender")
-living_status = st.sidebar.selectbox("Status Penjagaan", options=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"], key="living_status")
-location = st.sidebar.selectbox("Negeri", options=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"], key="location")
+# Sidebar inputs for personal details using session state
+name = st.sidebar.text_input("Nama", value=st.session_state.get('name', ""), key="name").upper()
+age = st.sidebar.number_input("Umur", min_value=0, max_value=120, step=1, value=st.session_state.get('age', 0), key="age")
+gender = st.sidebar.selectbox("Jantina", options=["Sila Pilih", "Lelaki", "Perempuan"], index=["Sila Pilih", "Lelaki", "Perempuan"].index(st.session_state.get('gender', "Sila Pilih")), key="gender")
+living_status = st.sidebar.selectbox("Status Penjagaan", options=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"], index=["Sila Pilih", "Tinggal bersendirian", "Tinggal bersama keluarga", "Tinggal di Pusat Jagaan Awam", "Tinggal di Pusat Jagaan Swasta"].index(st.session_state.get('living_status', "Sila Pilih")), key="living_status")
+location = st.sidebar.selectbox("Negeri", options=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"], index=["Sila Pilih", "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Perak", "Perlis", "Pulau Pinang", "Selangor", "Terengganu", "Sabah", "Sarawak", "WP Putrajaya", "WP Kuala Lumpur", "WP Labuan"].index(st.session_state.get('location', "Sila Pilih")), key="location")
 
 # Dropdowns for assessments with session state
 st.sidebar.write("### Status Keupayaan")
@@ -59,7 +52,7 @@ toileting = st.sidebar.selectbox(
         2: "Sentiasa memerlukan lampin, bekerjasama dalam menukar",
         1: "Kesukaran dalam menukar lampin, memerlukan 2 orang",
         0: "Menggunakan beg air kencing"
-    }[x], key="toileting"
+    }[x], index=["Pilih Status Anda", 5, 4, 3, 2, 1, 0].index(st.session_state.get('toileting', "Pilih Status Anda")), key="toileting"
 )
 mobility = st.sidebar.selectbox(
     "Keupayaan Pergerakan",
@@ -72,7 +65,7 @@ mobility = st.sidebar.selectbox(
         2: "Memerlukan bantuan untuk pemindahan tetapi boleh duduk sendiri",
         1: "Tidak boleh berpindah sendiri tetapi boleh bergolek di atas katil",
         0: "Tidak boleh mengubah kedudukan badan di atas katil"
-    }[x], key="mobility"
+    }[x], index=["Pilih Status Anda", 5, 4, 3, 2, 1, 0].index(st.session_state.get('mobility', "Pilih Status Anda")), key="mobility"
 )
 eating = st.sidebar.selectbox(
     "Keupayaan Untuk Makan",
@@ -85,7 +78,7 @@ eating = st.sidebar.selectbox(
         2: "Kesukaran menelan, memerlukan makanan lembut",
         1: "Memerlukan pemakanan khusus melalui tiub intravena (parenteral alimentation)",
         0: "Memerlukan pemakanan alimentasi intravena (intravenous alimentation)"
-    }[x], key="eating"
+    }[x], index=["Pilih Status Anda", 5, 4, 3, 2, 1, 0].index(st.session_state.get('eating', "Pilih Status Anda")), key="eating"
 )
 mental = st.sidebar.selectbox(
     "Status Keupayaan Mental",
@@ -98,7 +91,7 @@ mental = st.sidebar.selectbox(
         2: "Gangguan orientasi yang teruk, tiada tingkah laku bermasalah",
         1: "Gangguan orientasi dan tingkah laku bermasalah yang teruk",
         0: "Tiada aktiviti mental atau respon"
-    }[x], key="mental"
+    }[x], index=["Pilih Status Anda", 5, 4, 3, 2, 1, 0].index(st.session_state.get('mental', "Pilih Status Anda")), key="mental"
 )
 
 # Display labels with placeholders for results in single lines
@@ -144,7 +137,7 @@ if not mandatory_fields_filled:
     st.sidebar.warning("Sila lengkapkan semua medan untuk meneruskan.")
 
 # Prediction button
-if mandatory_fields_filled and st.sidebar.button("Klik Untuk Penilaian"):
+if mandatory_fields_filled and st.sidebar.button("Sila Klik Untuk Penilaian"):
     # Get the current date for the record
     current_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -212,7 +205,7 @@ if mandatory_fields_filled and st.sidebar.button("Klik Untuk Penilaian"):
     eating_result.markdown(f"<span style='color:{eating_color}'>{eating_desc}</span>", unsafe_allow_html=True)
     mental_result.markdown(f"<span style='color:{mental_color}'>{mental_desc}</span>", unsafe_allow_html=True)
 
-    # Save the results to a CSV file
+    # Save the results to the Excel file
     results = {
         "Date": current_date,
         "Name": name,
@@ -230,11 +223,13 @@ if mandatory_fields_filled and st.sidebar.button("Klik Untuk Penilaian"):
     results_df = pd.DataFrame([results])
 
     if os.path.exists(predictions_file_path):
-        # Append the data to an existing CSV file without writing headers
-        results_df.to_csv(predictions_file_path, mode='a', index=False, header=False)
+        # Append the data to an existing Excel file
+        with pd.ExcelWriter(predictions_file_path, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
+            results_df.to_excel(writer, sheet_name='Predictions', index=False, header=False, startrow=writer.sheets['Predictions'].max_row)
     else:
-        # Create a new CSV file and save the data with headers
-        results_df.to_csv(predictions_file_path, mode='w', index=False)
+        # Create a new Excel file and save the data
+        with pd.ExcelWriter(predictions_file_path, engine='openpyxl') as writer:
+            results_df.to_excel(writer, sheet_name='Predictions', index=False)
 
     st.success("Keputusan Penilaian")
 
